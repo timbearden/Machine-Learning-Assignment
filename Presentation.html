@@ -84,6 +84,65 @@ moveTrain &lt;- train[, c(moveIndex, 153)]</code></pre>
 <div id="model-building" class="section level2">
 <h2>Model-building</h2>
 <p>After selecting the desired variables, I began building several models on this reduced training set. I stuck with tree-based models, as they are good for predicting several different classes of outcomes. I built a simple model using the method rpart, then a bagged tree function using treebag, and a model with random forests using rf. The rpart model was very poor, but the model using treebag and rf were both pretty accurate. I recalculated the treebag and rf models using cross-validation. The random forest model using cross-validation ended up being the most accurate. Creating a confusion matrix using this model and the previously created test set ended up with an accuracy of 91.97%, with a 95% CI ranging from 91.35% to 92.56%. I would expect the final predictions based on this model to be similarly accurate.</p>
+<pre class="r"><code>mrfModel &lt;- train(classe ~., method = &quot;rf&quot;, data = moveTrain, trControl = trainControl(method = &quot;cv&quot;))</code></pre>
+<pre><code>## Loading required package: randomForest
+## randomForest 4.6-10
+## Type rfNews() to see new features/changes/bug fixes.
+## Loading required namespace: e1071</code></pre>
+<pre class="r"><code>mrfModel</code></pre>
+<pre><code>## Random Forest 
+## 
+## 11776 samples
+##    12 predictor
+##     5 classes: 'A', 'B', 'C', 'D', 'E' 
+## 
+## No pre-processing
+## Resampling: Cross-Validated (10 fold) 
+## 
+## Summary of sample sizes: 10599, 10597, 10599, 10599, 10598, 10597, ... 
+## 
+## Resampling results across tuning parameters:
+## 
+##   mtry  Accuracy  Kappa  Accuracy SD  Kappa SD
+##    2    0.9       0.9    0.009        0.012   
+##    7    0.9       0.9    0.008        0.010   
+##   12    0.9       0.9    0.007        0.009   
+## 
+## Accuracy was used to select the optimal model using  the largest value.
+## The final value used for the model was mtry = 2.</code></pre>
+<pre class="r"><code>predictions &lt;- predict(mrfModel, test)
+confusionMatrix(predictions, test$classe)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 2124   37   46   59    7
+##          B   34 1416  107   19   10
+##          C   45   37 1174   46   10
+##          D   23   23   33 1152   10
+##          E    6    5    8   10 1405
+## 
+## Overall Statistics
+##                                         
+##                Accuracy : 0.927         
+##                  95% CI : (0.921, 0.932)
+##     No Information Rate : 0.284         
+##     P-Value [Acc &gt; NIR] : &lt; 2e-16       
+##                                         
+##                   Kappa : 0.907         
+##  Mcnemar's Test P-Value : 3.99e-08      
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity             0.952    0.933    0.858    0.896    0.974
+## Specificity             0.973    0.973    0.979    0.986    0.995
+## Pos Pred Value          0.934    0.893    0.895    0.928    0.980
+## Neg Pred Value          0.981    0.984    0.970    0.980    0.994
+## Prevalence              0.284    0.193    0.174    0.164    0.184
+## Detection Rate          0.271    0.180    0.150    0.147    0.179
+## Detection Prevalence    0.290    0.202    0.167    0.158    0.183
+## Balanced Accuracy       0.963    0.953    0.918    0.941    0.985</code></pre>
 </div>
 
 

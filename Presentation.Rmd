@@ -33,3 +33,9 @@ moveTrain <- train[, c(moveIndex, 153)]
 ##Model-building
 After selecting the desired variables, I began building several models on this reduced training set. I stuck with tree-based models, as they are good for predicting several different classes of outcomes. I built a simple model using the method rpart, then a bagged tree function using treebag, and a model with random forests using rf. The rpart model was very poor, but the model using treebag and rf were both pretty accurate. I recalculated the treebag and rf models using cross-validation. The random forest model using cross-validation ended up being the most accurate. Creating a confusion matrix using this model and the previously created test set ended up with an accuracy of 91.97%, with a 95% CI ranging from 91.35% to 92.56%. I would expect the final predictions based on this model to be similarly accurate. 
 
+```{r}
+mrfModel <- train(classe ~., method = "rf", data = moveTrain, trControl = trainControl(method = "cv"))
+mrfModel
+predictions <- predict(mrfModel, test)
+confusionMatrix(predictions, test$classe)
+```
