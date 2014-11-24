@@ -1,0 +1,35 @@
+---
+title: "Exercise Movement Prediction"
+author: "Tim Bearden"
+date: "November 23, 2014"
+output: html_document
+---
+
+##Introduction
+This analysis was prepared to predict weight lifting form based on measurements taken by several movement sensors attached to different parts of the body. Six male participants performed dumbbell curls with sensors on their upper arms, forearms, belts, and the weights themselves. Their movements were classified into five different categories (A-E), representing correct form (A) and common errors people make (B-E). Data was taken from http://groupware.les.inf.puc-rio.br/har. 
+
+
+##Processing
+To begin, I uploaded the training set, and split that into it's own training and test sets. 
+
+```{r}
+library(caret); library(kernlab)
+training <- read.csv("pml-training.csv")
+training <- training[, -(1:7)] ## Getting rid of the non-movement variables
+inTrain <- createDataPartition(y = training$classe, p = 0.6, list = FALSE)
+train <- training[inTrain, ]
+test <- training[-inTrain, ]
+```
+
+Based off the information from http://groupware.les.inf.puc-rio.br/har, I selected variables which describe a few types of movements that seemed most important to the different form classifications. These variables described movements measured by the belt sensor along the z-axis (front-to-back), the arm sensor along the z-axis, and the forearm sensor along the y-axis (up-and-down). 
+
+```{r}
+moveIndex <- grep("belt_z", names(train))
+moveIndex <- append(moveIndex, grep("arm_z", names(train)))
+moveIndex <- append(moveIndex, grep("forearm_y", names(train)))
+moveTrain <- train[, c(moveIndex, 153)]
+```
+
+##Model-building
+After selecting the desired variables, I began building several models on this reduced training set. I stuck with tree-based models, as they are good for predicting several different classes of outcomes. I built a simple model using the method rpart, then a bagged tree function using treebag, and a model with random forests using rf. The rpart model was very poor, but the model using treebag and rf were both pretty accurate. I recalculated the treebag and rf models using cross-validation. The random forest model using cross-validation ended up being the most accurate. Creating a confusion matrix using this model and the previously created test set ended up with an accuracy of 91.97%, with a 95% CI ranging from 91.35% to 92.56%. I would expect the final predictions based on this model to be similarly accurate. 
+
